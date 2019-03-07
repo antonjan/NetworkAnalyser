@@ -44,8 +44,8 @@ from guiqwt.builder import make
 import numpy as np
 import sys
 import platform
-import cPickle
-
+#import cPickle
+import pickle as cPickle
 import serial
 import struct
 import datetime
@@ -95,7 +95,7 @@ class CentralWidget(QSplitter):
         if numpts is None:
             numpts = int(self.settings.value('spectrum/num_samps', 6000))
 
-        print start_freq, bandwidth, numpts
+        print (start_freq, bandwidth, numpts)
 
         self.settings.setValue('spectrum/start_freq', start_freq)
         self.settings.setValue('spectrum/bandwidth', bandwidth)
@@ -123,7 +123,7 @@ class CentralWidget(QSplitter):
         self.prog.setValue(int(val))
 
     def measurement_complete(self, data, start_freq, step_size, num_samples):
-        print 'cback', start_freq, step_size
+        print ('cback', start_freq, step_size)
         # data, start_freq, step_size, num_samples = cback_data
         if data is not None:
             if 'Cal Data' in self.raw_data.keys():
@@ -186,7 +186,7 @@ class CentralWidget(QSplitter):
     def show_data(self, label):
         data = self.raw_data[label]['data']
         xaxis = self.raw_data['Latest']['freqs']
-        print 'xmin', np.min(xaxis), np.max(xaxis)
+        print ('xmin', np.min(xaxis), np.max(xaxis))
 
         self.dshape = data.shape[0]
 
@@ -194,7 +194,7 @@ class CentralWidget(QSplitter):
         if vals > 4:
             fact = 10**int(vals - 4)
             n = int(data.shape[0] / fact)
-            print 'Factor', fact,'N', n
+            print ('Factor', fact,'N', n)
 
             s = data[0:n*fact].reshape(n, fact)
             data = np.mean(s, axis=1)
@@ -202,8 +202,8 @@ class CentralWidget(QSplitter):
             s = xaxis[0:n*fact].reshape(n, fact)
             xaxis = np.mean(s, axis=1)
 
-        print 'Min', np.min(data), 'Max', np.max(data), data.shape
-        print 'dshape', self.dshape
+        print ('Min', np.min(data), 'Max', np.max(data), data.shape)
+        print ('dshape', self.dshape)
         if label in self.item.keys():
             if self.do_log:
                 self.item[label].set_data(xaxis, data)
@@ -226,7 +226,7 @@ class CentralWidget(QSplitter):
         self.item[label].plot().replot()
 
     def rescan(self):
-        print self.curvewidget.plot.get_axis_limits(BasePlot.X_BOTTOM)
+        print (self.curvewidget.plot.get_axis_limits(BasePlot.X_BOTTOM))
         ax = self.curvewidget.plot.get_axis_limits(BasePlot.X_BOTTOM)
         un = self.curvewidget.plot.get_axis_unit(BasePlot.X_BOTTOM)
         if un == 'MHz':
@@ -268,7 +268,7 @@ class MainWindow(QMainWindow):
             self.settings.clear()
 
         self.file_dir = self.settings.value('spectrum/file_dir', os.getenv('HOME'))
-        print 'File dir', self.file_dir
+        print ('File dir', self.file_dir)
         self.dev = dev
 
         self.setup(start_freq, bandwidth, numpts, max_hold)
@@ -278,7 +278,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(get_icon('python.png'))
         self.setWindowTitle(APP_NAME + ' ' + VERS + ' Running on ' + self.dev)
         dt = QDesktopWidget()
-        print dt.numScreens(), dt.screenGeometry()
+        print (dt.numScreens(), dt.screenGeometry())
         sz = dt.screenGeometry()
 
         self.resize(QSize(sz.width()*9/10, sz.height()*9/10))
@@ -349,7 +349,7 @@ class MainWindow(QMainWindow):
         
         if max_hold is None:
             max_hold = self.settings.value('gui/max_hold', False)
-            print 'Got max_hold', max_hold
+            print ('Got max_hold', max_hold)
             if type(max_hold) != bool:
                 if max_hold in ['y', 'Y', 'T', 'True', 'true', '1']:
                     max_hold = True
@@ -383,15 +383,15 @@ class MainWindow(QMainWindow):
         self.mainwidget.do_log_lin()
 
     def saveFileDialog(self):
-        print 'Save f dialog'
+        print ('Save f dialog')
         fileName = QFileDialog.getSaveFileName(self, _("Save Cal Data"), self.file_dir)
-        print fileName
+        print (fileName)
         self.mainwidget.save_cal_data(fileName)
 
     def loadFileDialog(self):
-        print 'load f dialog'
+        print ('load f dialog')
         fileName = QFileDialog.getOpenFileName(self, _("Open Cal Data"), self.file_dir)
-        print fileName
+        print (fileName)
         self.mainwidget.load_cal_data(fileName)
 
     def about(self):
@@ -404,14 +404,14 @@ class MainWindow(QMainWindow):
 
 
 def usage():
-    print 'netan.py [options]'
-    print '-r/--reset                  Reset the defaults'
-    print '-s/--start_freq <freq>      Set the start frequency (mut excl to centre_freq option)'
-    print '-c/--centre_freq <freq>     Set the centre frequency (mut excl to start_freq option)'
-    print '-b/--bandwidth <freq>       Set the bandwidth'
-    print '-n/--numpts <number>        Set the number of points in the sweep'
-    print '-m/--max_hold               Turn on max hold'
-    print '-d/--device <device>        Use device <device>, default /dev/ttyUSB0'
+    print ('netan.py [options]')
+    print ('-r/--reset                  Reset the defaults')
+    print ('-s/--start_freq <freq>      Set the start frequency (mut excl to centre_freq option)')
+    print ('-c/--centre_freq <freq>     Set the centre frequency (mut excl to start_freq option)')
+    print ('-b/--bandwidth <freq>       Set the bandwidth')
+    print ('-n/--numpts <number>        Set the number of points in the sweep')
+    print ('-m/--max_hold               Turn on max hold')
+    print ('-d/--device <device>        Use device <device>, default /dev/ttyUSB0')
 
     return
 
@@ -452,7 +452,7 @@ if __name__ == '__main__':
             dev = a[:]
 
     if centre_freq is not None and start_freq is not None:
-        print 'Only one of start_freq or centre_freq can be set'
+        print ('Only one of start_freq or centre_freq can be set')
         raise ValueError('Invalid option set')
 
     if centre_freq is not None:
@@ -461,8 +461,6 @@ if __name__ == '__main__':
         else:
             start_freq = centre_freq - bandwidth / 2.0
     app = qapplication()
-    window = MainWindow(reset=reset, start_freq=start_freq,
-                        bandwidth=bandwidth, numpts=numpts,
-                        max_hold=max_hold, dev=dev)
+    window = MainWindow(reset=reset, start_freq=start_freq, bandwidth=bandwidth, numpts=numpts, max_hold=max_hold, dev=dev)
     window.show()
     app.exec_()

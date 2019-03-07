@@ -4,20 +4,21 @@ import time
 import serial
 import struct
 import numpy as np
-import cPickle
+#import cPickle
+import pickle as cPickle
 import sys
 
 def empty_buffer(bg7_fp):
     time.sleep(3.0)
-    print 'BG7: EmptyBuffer: in waiting', bg7_fp.inWaiting()
+    print ('BG7: EmptyBuffer: in waiting', bg7_fp.inWaiting())
     while bg7_fp.inWaiting() > 0:
-	pants = bg7_fp.read(bg7_fp.inWaiting())
-	time.sleep(1.5)
-	print 'BG7: trying to empty buff', bg7_fp.inWaiting()
-    print 'BG7: Finished empty_buffer'
+        pants = bg7_fp.read(bg7_fp.inWaiting())
+        time.sleep(1.5)
+        print ('BG7: trying to empty buff', bg7_fp.inWaiting())
+    print ('BG7: Finished empty_buffer')
 
 if len(sys.argv) < 2:
-    print 'Usage:   test_bg7.py  <save filename> [<atten val 1> [<atten val 2> [......]]]'
+    print ('Usage:   test_bg7.py  <save filename> [<atten val 1> [<atten val 2> [......]]]')
     sys.exit(1)
     
 do_var_atten = False
@@ -53,32 +54,32 @@ raw_data['raw'] = np.zeros((raw_data['num_samples'], len(raw_data['atten_vals'])
 
 for atten_idx in xrange(len(raw_data['atten_vals'])):
     if do_var_atten:
-	fp_micro.write(str(raw_data['atten_vals'][atten_idx] * 2) + '\n')
-	time.sleep(1)
-	print 'Read micro',
-	while fp_micro.inWaiting() > 0:
-	    print fp_micro.read(),
+        fp_micro.write(str(raw_data['atten_vals'][atten_idx] * 2) + '\n')
+        time.sleep(1)
+        print ('Read micro',)
+        while fp_micro.inWaiting() > 0:
+            print (fp_micro.read(),)
 
-	print 'Done read micro'
+        print ('Done read micro')
 
     for count in xrange(raw_data['cycle_count']):
-	bg7.write('\x8f' + raw_data['log'] + format(int(raw_data['start_freq']/10.0), '09')+
+        bg7.write('\x8f' + raw_data['log'] + format(int(raw_data['start_freq']/10.0), '09')+
 		  format(int(raw_data['step_size']/10.0), '08')+
 		  format(int(raw_data['num_samples']), '04'))
 	
-	data = bytes('')
-	time.sleep(2)
+        data = bytes('')
+        time.sleep(2)
     
-	while bg7.inWaiting() > 0:
-	    data += bg7.read(bg7.inWaiting())
-	    print '  so far got', len(data)
-	    time.sleep(2)
+        while bg7.inWaiting() > 0:
+            data += bg7.read(bg7.inWaiting())
+            print ('  so far got', len(data))
+            time.sleep(2)
 	
-	time.sleep(1)
+        time.sleep(1)
     
-	print 'Got', len(data), count
-	if len(data) == 4 * raw_data['num_samples']:
-	    raw_data['raw'][:, atten_idx] += np.array(struct.unpack('<'+str(raw_data['num_samples'] * 2) + 'H', data)[::2])
+        print ('Got', len(data), count)
+        if len(data) == 4 * raw_data['num_samples']:
+            raw_data['raw'][:, atten_idx] += np.array(struct.unpack('<'+str(raw_data['num_samples'] * 2) + 'H', data)[::2])
 
     
 raw_data['raw'] /= float(raw_data['cycle_count'])
