@@ -67,8 +67,8 @@ class BG7(QThread):
         self.sport = sport
         try:
             self.reconnect()
-        except Exception, e:
-            print e
+        except Exception as e:
+            print (e)
 	    
         self.empty_buffer()
 
@@ -76,7 +76,7 @@ class BG7(QThread):
         pass
     
     def timeout_serial(self):
-        print 'Timeout serial'
+        print ('Timeout serial')
         self.timeout_timer.stop()
         self.reconnect()
         self.run()
@@ -85,13 +85,13 @@ class BG7(QThread):
         if self.fp != None:
             try:
                 self.fp.close()
-            except Exception, e:
-                print e
+            except Exception as e:
+                print (e)
 
         try:
             self.fp = serial.Serial(self.sport, 57600, timeout=4)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print (e)
             raise e
 
     def __del__(self):
@@ -103,8 +103,11 @@ class BG7(QThread):
                 self.restart = False
                 #self.freq = self.freq
                 
-            print 'Sending command', self.freq
-            self.fp.write('\x8f' + 'f' + format(int(self.freq/10.0), '09'))
+            print ('Sending command', self.freq)
+            serialcmd='\x8f' + 'f' + format(int(self.freq/10.0), '09')
+            #self.fp.write('\x8f' + 'f' + format(int(self.freq/10.0), '09'))  #ser.write(serialcmd.encode())
+            self.fp.write(serialcmd.encode())
+
 	    
 
         
@@ -181,9 +184,9 @@ class MainWindow(QMainWindow):
 import getopt
 
 def usage():
-    print 'siggen.py [options]'
-    print '-r/--reset                  Reset the defaults'
-    print '-f/--freq <freq>            Set the frequency'
+    print ('siggen.py [options]')
+    print ('-r/--reset                  Reset the defaults')
+    print ('-f/--freq <freq>            Set the frequency')
     
     return
 
